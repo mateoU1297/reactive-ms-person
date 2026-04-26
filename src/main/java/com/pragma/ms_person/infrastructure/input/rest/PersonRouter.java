@@ -87,12 +87,35 @@ public class PersonRouter {
                                             description = "Already enrolled")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/persons/enrollments/{bootcampId}",
+                    method = RequestMethod.GET,
+                    beanClass = PersonRestHandler.class,
+                    beanMethod = "findEnrolledPersonsByBootcampId",
+                    operation = @Operation(
+                            operationId = "findEnrolledPersonsByBootcampId",
+                            summary = "Find persons enrolled in a bootcamp",
+                            tags = {"Person"},
+                            parameters = {
+                                    @Parameter(name = "bootcampId", in = ParameterIn.PATH,
+                                            required = true,
+                                            schema = @Schema(type = "integer", format = "int64"))
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200",
+                                            content = @Content(
+                                                    schema = @Schema(implementation = PersonResponse.class)
+                                            ))
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> personRoutes(PersonRestHandler handler) {
         return RouterFunctions.route()
                 .POST("/api/v1/persons", handler::save)
                 .POST("/api/v1/persons/{personId}/enrollments", handler::enroll)
+                .GET("/api/v1/persons/enrollments/{bootcampId}", handler::findEnrolledPersonsByBootcampId)
                 .build();
     }
 }

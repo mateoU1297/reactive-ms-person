@@ -12,4 +12,6 @@ public interface IEnrollmentPersistencePort {
     Mono<Boolean> existsByPersonIdAndBootcampId(Long personId, Long bootcampId);
 
     Mono<Long> countByPersonId(Long personId);
+
+    Flux<Enrollment> findByBootcampId(Long bootcampId);
 }

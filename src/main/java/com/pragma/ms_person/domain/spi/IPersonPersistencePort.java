@@ -9,4 +9,6 @@ public interface IPersonPersistencePort {
     Mono<Boolean> existsByEmail(String email);
 
     Mono<Boolean> existsById(Long id);
+
+    Mono<Person> findById(Long id);
 }

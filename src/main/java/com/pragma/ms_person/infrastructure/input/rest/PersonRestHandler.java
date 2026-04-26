@@ -32,4 +32,11 @@ public class PersonRestHandler {
                         .status(HttpStatus.CREATED)
                         .bodyValue(response));
     }
+
+    public Mono<ServerResponse> findEnrolledPersonsByBootcampId(ServerRequest request) {
+        Long bootcampId = Long.parseLong(request.pathVariable("bootcampId"));
+        return personHandler.findEnrolledPersonsByBootcampId(bootcampId)
+                .collectList()
+                .flatMap(response -> ServerResponse.ok().bodyValue(response));
+    }
 }

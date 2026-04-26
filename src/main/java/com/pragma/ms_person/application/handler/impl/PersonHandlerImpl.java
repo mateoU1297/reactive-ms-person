@@ -9,6 +9,7 @@ import com.pragma.ms_person.application.mapper.IPersonMapper;
 import com.pragma.ms_person.domain.api.IPersonServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -29,5 +30,11 @@ public class PersonHandlerImpl implements IPersonHandler {
     public Mono<EnrollmentResponse> enroll(Long personId, Long bootcampId) {
         return personServicePort.enroll(personId, bootcampId)
                 .map(enrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Flux<PersonResponse> findEnrolledPersonsByBootcampId(Long bootcampId) {
+        return personServicePort.findEnrolledPersonsByBootcampId(bootcampId)
+                .map(personMapper::toResponse);
     }
 }

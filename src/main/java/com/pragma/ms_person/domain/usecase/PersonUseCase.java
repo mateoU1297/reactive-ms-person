@@ -13,6 +13,7 @@ import com.pragma.ms_person.domain.spi.IPersonPersistencePort;
 import com.pragma.ms_person.domain.spi.IReportClientPort;
 import com.pragma.ms_person.domain.validator.EnrollmentValidator;
 import com.pragma.ms_person.domain.validator.PersonValidator;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -74,6 +75,12 @@ public class PersonUseCase implements IPersonServicePort {
                         enrollmentPersistencePort.save(new Enrollment(null, personId, bootcampId, LocalDate.now()))
                 )
                 .doOnSuccess(saved -> reportClientPort.notifyPersonEnrolled(bootcampId));
+    }
+
+    @Override
+    public Flux<Person> findEnrolledPersonsByBootcampId(Long bootcampId) {
+        return enrollmentPersistencePort.findByBootcampId(bootcampId)
+                .flatMap(enrollment -> personPersistencePort.findById(enrollment.getPersonId()));
     }
 
     private Mono<List<Bootcamp>> getEnrolledBootcamps(Long personId) {

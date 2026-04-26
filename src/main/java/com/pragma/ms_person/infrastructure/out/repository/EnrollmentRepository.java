@@ -11,4 +11,6 @@ public interface EnrollmentRepository extends ReactiveCrudRepository<EnrollmentE
     Mono<Boolean> existsByPersonIdAndBootcampId(Long personId, Long bootcampId);
 
     Mono<Long> countByPersonId(Long personId);
+
+    Flux<EnrollmentEntity> findByBootcampId(Long bootcampId);
 }

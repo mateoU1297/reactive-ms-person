@@ -5,6 +5,7 @@ import com.pragma.ms_person.domain.spi.IPersonPersistencePort;
 import com.pragma.ms_person.infrastructure.out.mapper.IPersonEntityMapper;
 import com.pragma.ms_person.infrastructure.out.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -27,5 +28,11 @@ public class PersonPersistenceAdapter implements IPersonPersistencePort {
     @Override
     public Mono<Boolean> existsById(Long id) {
         return personRepository.existsById(id);
+    }
+
+    @Override
+    public Mono<Person> findById(Long id) {
+        return personRepository.findById(id)
+                .map(personEntityMapper::toDomain);
     }
 }
