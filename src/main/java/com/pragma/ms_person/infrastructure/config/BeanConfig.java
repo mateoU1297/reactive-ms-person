@@ -4,10 +4,12 @@ import com.pragma.ms_person.domain.api.IPersonServicePort;
 import com.pragma.ms_person.domain.spi.IBootcampClientPort;
 import com.pragma.ms_person.domain.spi.IEnrollmentPersistencePort;
 import com.pragma.ms_person.domain.spi.IPersonPersistencePort;
+import com.pragma.ms_person.domain.spi.IReportClientPort;
 import com.pragma.ms_person.domain.usecase.PersonUseCase;
 import com.pragma.ms_person.infrastructure.out.adapter.BootcampWebClientAdapter;
 import com.pragma.ms_person.infrastructure.out.adapter.EnrollmentPersistenceAdapter;
 import com.pragma.ms_person.infrastructure.out.adapter.PersonPersistenceAdapter;
+import com.pragma.ms_person.infrastructure.out.http.ReportWebClientAdapter;
 import com.pragma.ms_person.infrastructure.out.mapper.IEnrollmentEntityMapper;
 import com.pragma.ms_person.infrastructure.out.mapper.IPersonEntityMapper;
 import com.pragma.ms_person.infrastructure.out.repository.EnrollmentRepository;
@@ -28,16 +30,27 @@ public class BeanConfig {
     private final IEnrollmentEntityMapper enrollmentEntityMapper;
 
     @Bean
-    public WebClient bootcampWebClient(
-            @Value("${clients.bootcamp.url}") String bootcampUrl) {
+    public WebClient bootcampWebClient(@Value("${clients.bootcamp.url}") String bootcampUrl) {
         return WebClient.builder()
                 .baseUrl(bootcampUrl)
                 .build();
     }
 
     @Bean
+    public WebClient reportWebClient(@Value("${clients.report.url}") String reportUrl) {
+        return WebClient.builder()
+                .baseUrl(reportUrl)
+                .build();
+    }
+
+    @Bean
     public IBootcampClientPort bootcampClientPort(WebClient bootcampWebClient) {
         return new BootcampWebClientAdapter(bootcampWebClient);
+    }
+
+    @Bean
+    public IReportClientPort reportClientPort(WebClient reportWebClient) {
+        return new ReportWebClientAdapter(reportWebClient);
     }
 
     @Bean
@@ -51,7 +64,7 @@ public class BeanConfig {
     }
 
     @Bean
-    public IPersonServicePort personServicePort(IBootcampClientPort bootcampClientPort) {
-        return new PersonUseCase(personPersistencePort(), enrollmentPersistencePort(), bootcampClientPort);
+    public IPersonServicePort personServicePort(IBootcampClientPort bootcampClientPort, IReportClientPort reportClientPort) {
+        return new PersonUseCase(personPersistencePort(), enrollmentPersistencePort(), bootcampClientPort, reportClientPort);
     }
 }
