@@ -19,6 +19,8 @@ spring:
 clients:
   bootcamp:
     url: http://localhost:8082
+  report:
+    url: http://localhost:8084
 
 springdoc:
   api-docs:

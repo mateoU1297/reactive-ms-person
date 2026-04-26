@@ -10,6 +10,7 @@ import com.pragma.ms_person.domain.model.Person;
 import com.pragma.ms_person.domain.spi.IBootcampClientPort;
 import com.pragma.ms_person.domain.spi.IEnrollmentPersistencePort;
 import com.pragma.ms_person.domain.spi.IPersonPersistencePort;
+import com.pragma.ms_person.domain.spi.IReportClientPort;
 import com.pragma.ms_person.domain.validator.EnrollmentValidator;
 import com.pragma.ms_person.domain.validator.PersonValidator;
 import reactor.core.publisher.Mono;
@@ -22,13 +23,16 @@ public class PersonUseCase implements IPersonServicePort {
     private final IPersonPersistencePort personPersistencePort;
     private final IEnrollmentPersistencePort enrollmentPersistencePort;
     private final IBootcampClientPort bootcampClientPort;
+    private final IReportClientPort reportClientPort;
 
     public PersonUseCase(IPersonPersistencePort personPersistencePort,
                          IEnrollmentPersistencePort enrollmentPersistencePort,
-                         IBootcampClientPort bootcampClientPort) {
+                         IBootcampClientPort bootcampClientPort,
+                         IReportClientPort reportClientPort) {
         this.personPersistencePort = personPersistencePort;
         this.enrollmentPersistencePort = enrollmentPersistencePort;
         this.bootcampClientPort = bootcampClientPort;
+        this.reportClientPort = reportClientPort;
     }
 
     @Override
@@ -68,7 +72,8 @@ public class PersonUseCase implements IPersonServicePort {
                 )
                 .flatMap(newBootcamp ->
                         enrollmentPersistencePort.save(new Enrollment(null, personId, bootcampId, LocalDate.now()))
-                );
+                )
+                .doOnSuccess(saved -> reportClientPort.notifyPersonEnrolled(bootcampId));
     }
 
     private Mono<List<Bootcamp>> getEnrolledBootcamps(Long personId) {
