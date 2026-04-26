@@ -13,6 +13,7 @@ import com.pragma.ms_person.domain.model.Person;
 import com.pragma.ms_person.domain.spi.IBootcampClientPort;
 import com.pragma.ms_person.domain.spi.IEnrollmentPersistencePort;
 import com.pragma.ms_person.domain.spi.IPersonPersistencePort;
+import com.pragma.ms_person.domain.spi.IReportClientPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import reactor.test.StepVerifier;
 import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -39,8 +41,12 @@ class PersonUseCaseTest {
 
     @Mock
     private IEnrollmentPersistencePort enrollmentPersistencePort;
+
     @Mock
     private IBootcampClientPort bootcampClientPort;
+
+    @Mock
+    private IReportClientPort reportClientPort;
 
     @InjectMocks
     private PersonUseCase personUseCase;
@@ -122,11 +128,14 @@ class PersonUseCaseTest {
         when(bootcampClientPort.findById(1L)).thenReturn(Mono.just(bootcamp));
         when(enrollmentPersistencePort.findByPersonId(1L)).thenReturn(Flux.empty());
         when(enrollmentPersistencePort.save(any())).thenReturn(Mono.just(saved));
+        doNothing().when(reportClientPort).notifyPersonEnrolled(any());
 
         StepVerifier.create(personUseCase.enroll(1L, 1L))
                 .expectNextMatches(e -> e.getPersonId().equals(1L)
                         && e.getBootcampId().equals(1L))
                 .verifyComplete();
+
+        verify(reportClientPort).notifyPersonEnrolled(any());
     }
 
     @Test
@@ -210,9 +219,12 @@ class PersonUseCaseTest {
                 .thenReturn(Flux.just(existingEnrollment));
         when(bootcampClientPort.findById(2L)).thenReturn(Mono.just(past));
         when(enrollmentPersistencePort.save(any())).thenReturn(Mono.just(saved));
+        doNothing().when(reportClientPort).notifyPersonEnrolled(any());
 
         StepVerifier.create(personUseCase.enroll(1L, 1L))
                 .expectNextCount(1)
                 .verifyComplete();
+
+        verify(reportClientPort).notifyPersonEnrolled(any());
     }
 }
