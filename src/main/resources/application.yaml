@@ -1,3 +1,27 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: ms-person
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/person_db?currentSchema=ms_person
+    username: postgres
+    password: 1297
+  flyway:
+    url: jdbc:postgresql://localhost:5432/person_db
+    user: postgres
+    password: 1297
+    locations: classpath:db/migration
+    schemas: ms_person
+    default-schema: ms_person
+
+clients:
+  bootcamp:
+    url: http://localhost:8082
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
