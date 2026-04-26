@@ -227,4 +227,31 @@ class PersonUseCaseTest {
 
         verify(reportClientPort).notifyPersonEnrolled(any());
     }
+
+    @Test
+    void findEnrolledPersonsByBootcampId_success() {
+        Person person1 = new Person(1L, "John", "john@example.com");
+        Person person2 = new Person(2L, "Jane", "jane@example.com");
+        Enrollment enrollment1 = new Enrollment(1L, 1L, 1L, LocalDate.now());
+        Enrollment enrollment2 = new Enrollment(2L, 2L, 1L, LocalDate.now());
+
+        when(enrollmentPersistencePort.findByBootcampId(1L))
+                .thenReturn(Flux.just(enrollment1, enrollment2));
+        when(personPersistencePort.findById(1L)).thenReturn(Mono.just(person1));
+        when(personPersistencePort.findById(2L)).thenReturn(Mono.just(person2));
+
+        StepVerifier.create(personUseCase.findEnrolledPersonsByBootcampId(1L))
+                .expectNextMatches(p -> p.getName().equals("John"))
+                .expectNextMatches(p -> p.getName().equals("Jane"))
+                .verifyComplete();
+    }
+
+    @Test
+    void findEnrolledPersonsByBootcampId_noEnrollments_returnsEmpty() {
+        when(enrollmentPersistencePort.findByBootcampId(99L))
+                .thenReturn(Flux.empty());
+
+        StepVerifier.create(personUseCase.findEnrolledPersonsByBootcampId(99L))
+                .verifyComplete();
+    }
 }

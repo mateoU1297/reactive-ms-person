@@ -35,4 +35,10 @@ public class EnrollmentPersistenceAdapter implements IEnrollmentPersistencePort 
     public Mono<Long> countByPersonId(Long personId) {
         return enrollmentRepository.countByPersonId(personId);
     }
+
+    @Override
+    public Flux<Enrollment> findByBootcampId(Long bootcampId) {
+        return enrollmentRepository.findByBootcampId(bootcampId)
+                .map(enrollmentEntityMapper::toDomain);
+    }
 }
