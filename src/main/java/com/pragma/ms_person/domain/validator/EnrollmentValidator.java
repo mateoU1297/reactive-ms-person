@@ -7,13 +7,15 @@ import com.pragma.ms_person.domain.model.Bootcamp;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 public class EnrollmentValidator {
 
     private static final int MAX_ENROLLMENTS = 5;
 
-    private EnrollmentValidator() {}
+    private EnrollmentValidator() {
+    }
 
     public static Mono<Boolean> validateNotAlreadyEnrolled(boolean exists, Long personId, Long bootcampId) {
         if (exists)
@@ -31,16 +33,17 @@ public class EnrollmentValidator {
         LocalDate newStart = newBootcamp.getLaunchDate();
         LocalDate newEnd = newStart.plusMonths(newBootcamp.getDurationMonths());
 
-        for (Bootcamp enrolled : enrolledBootcamps) {
-            LocalDate enrolledStart = enrolled.getLaunchDate();
-            LocalDate enrolledEnd = enrolledStart.plusMonths(enrolled.getDurationMonths());
+        return enrolledBootcamps.stream()
+                .sorted(Comparator.comparing(Bootcamp::getLaunchDate))
+                .filter(enrolled -> hasDateConflict(newStart, newEnd, enrolled))
+                .findFirst()
+                .map(conflicting -> Mono.<Boolean>error(new BootcampDateConflictException(conflicting.getId())))
+                .orElse(Mono.just(true));
+    }
 
-            boolean overlaps = newStart.isBefore(enrolledEnd)
-                    && newEnd.isAfter(enrolledStart);
-
-            if (overlaps)
-                return Mono.error(new BootcampDateConflictException(enrolled.getId()));
-        }
-        return Mono.just(true);
+    private static boolean hasDateConflict(LocalDate newStart, LocalDate newEnd, Bootcamp enrolled) {
+        LocalDate enrolledStart = enrolled.getLaunchDate();
+        LocalDate enrolledEnd = enrolledStart.plusMonths(enrolled.getDurationMonths());
+        return newStart.isBefore(enrolledEnd) && newEnd.isAfter(enrolledStart);
     }
 }
